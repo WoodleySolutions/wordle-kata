@@ -6,6 +6,13 @@ public class Wordle
     private readonly char yellow = 'Y';
     private readonly char gray = '-';
 
+    private List<(string answer, string guess, string expected)> guessHistory = new();
+
+    public new List<(string answer, string guess, string expected)> GetGuessHistory()
+    {
+        return guessHistory;
+    }
+
     public string Guess(string answer, string guess)
     {
         char[] result = [gray, gray, gray, gray, gray];
@@ -29,7 +36,10 @@ public class Wordle
                 usedChars.Add(guess[i]);
             }
         }
+        var resultString = new string(result);
 
-        return new string(result);
+        guessHistory.Add(new(answer, guess, resultString));
+
+        return resultString;
     }
 }
