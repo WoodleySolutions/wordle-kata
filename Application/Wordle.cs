@@ -23,7 +23,7 @@ public class Wordle
                     result[index] = gray;
                 }
             }
-            else if (answer.Contains(guess[i]) && !usedChars.Contains(guess[i]))
+            else if (usedChars.Count(c => c == guess[i]) < answer.Count(c => c == guess[i]))
             {
                 result[i] = yellow;
                 usedChars.Add(guess[i]);
