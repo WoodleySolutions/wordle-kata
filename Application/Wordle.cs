@@ -7,11 +7,7 @@ public class Wordle
     private readonly char gray = '-';
 
     private List<(string answer, string guess, string expected)> guessHistory = new();
-
-    public new List<(string answer, string guess, string expected)> GetGuessHistory()
-    {
-        return guessHistory;
-    }
+    public IReadOnlyList<(string answer, string guess, string feedback)> GuessHistory => guessHistory;
 
     public string Guess(string answer, string guess)
     {

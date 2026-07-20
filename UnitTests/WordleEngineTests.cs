@@ -25,8 +25,6 @@ public class WordleEngineTests
     [Fact]
     public void WordleCanTrackPreviousGuesses()
     {
-        //assumptions: it's worthwhile to cache results of previous guesses to avoid recalculating them.
-
         var guesses = new List<(string answer, string guess, string expected)>
         {
             ("PLANE", "DITCH", "-----"),
@@ -35,13 +33,11 @@ public class WordleEngineTests
             ("PLANE", "PLANE", "GGGGG")
         };
 
-        foreach (var (answer, guess, expected) in guesses)
+        foreach (var (answer, guess, _) in guesses)
         {
             _wordle.Guess(answer, guess);
         }
 
-        var history = _wordle.GetGuessHistory();
-
-        Assert.Equal(guesses, history);
+        Assert.Equal(guesses, _wordle.GuessHistory);
     }
 }
