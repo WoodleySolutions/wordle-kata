@@ -1,6 +1,6 @@
 namespace Application;
 
-public class Wordle
+public class Wordle(string answer)
 {
     private readonly char green = 'G';
     private readonly char yellow = 'Y';
@@ -8,16 +8,30 @@ public class Wordle
 
     private const int MAXGUESSCOUNT = 6;
 
-    private List<(string answer, string guess, string feedback)> guessHistory = new();
-    public IReadOnlyList<(string answer, string guess, string feedback)> GuessHistory => guessHistory;
+    private List<(string guess, string feedback)> guessHistory = new();
+    private readonly string answer = answer;
 
-    public string Guess(string answer, string guess)
+    public IReadOnlyList<(string guess, string feedback)> GuessHistory => guessHistory;
+
+    public GameStatus Status { get; set; } = GameStatus.InProgress;
+
+    public string Guess(string guess)
     {
-        ValidateInput(answer, guess);
+        ValidateInput(guess);
 
+        var score = Score(guess);
+
+        UpdateGameStatus(score);
+
+        guessHistory.Add((guess, score));
+
+        return score;
+    }
+
+    private string Score(string guess)
+    {
         char[] result = [gray, gray, gray, gray, gray];
         Dictionary<char, int> unmatched = [];
-
         // Pass 1: mark greens; tally the answer letters greens didn't claim
         for (int i = 0; i < answer.Length; i++)
         {
@@ -30,27 +44,20 @@ public class Wordle
                 unmatched[answer[i]] = unmatched.GetValueOrDefault(answer[i]) + 1;
             }
         }
-
         // Pass 2: non-green guess letters spend the tally, left to right
         for (int i = 0; i < answer.Length; i++)
         {
             if (result[i] == green) continue;
-
             if (unmatched.GetValueOrDefault(guess[i]) > 0)
             {
                 result[i] = yellow;
                 unmatched[guess[i]]--;
             }
         }
-
-        var resultString = new string(result);
-
-        guessHistory.Add((answer, guess, resultString));
-
-        return resultString;
+        return new string(result);
     }
 
-    private void ValidateInput(string answer, string guess)
+    private void ValidateInput(string guess)
     {
         if (guess.Length != answer.Length)
         {
@@ -65,4 +72,23 @@ public class Wordle
             throw new InvalidOperationException("Maximum number of guesses reached");
         }
     }
+
+    private void UpdateGameStatus(string score)
+    {
+        if (score == new string(green, answer.Length))
+        {
+            Status = GameStatus.Won;
+        }
+        else if (guessHistory.Count >= MAXGUESSCOUNT)
+        {
+            Status = GameStatus.Lost;
+        }
+    }
+}
+
+public enum GameStatus
+{
+    InProgress,
+    Won,
+    Lost
 }
