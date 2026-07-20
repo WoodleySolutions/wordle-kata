@@ -176,7 +176,7 @@ public class WordleEngineTests
         Assert.Equal(answer, game.Solution);
 
         //check that further guesses are not allowed after winning the game
-        var exception = Assert.Throws<InvalidOperationException>(() => game.Guess(game.Guess("WINNR")));
+        var exception = Assert.Throws<InvalidOperationException>(() => game.Guess("WINNR"));
         Assert.Equal("Game already won", exception.Message);
     }
 }

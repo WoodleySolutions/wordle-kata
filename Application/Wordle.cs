@@ -6,7 +6,7 @@ public class Wordle(string answer)
     private readonly char yellow = 'Y';
     private readonly char gray = '-';
 
-    private const int MAXGUESSCOUNT = 6;
+    private const int MaxGuessCount = 6;
 
     private List<(string guess, string feedback)> guessHistory = new();
     private readonly string answer = answer;
@@ -85,7 +85,7 @@ public class Wordle(string answer)
         {
             Status = GameStatus.Won;
         }
-        else if (guessHistory.Count >= MAXGUESSCOUNT)
+        else if (guessHistory.Count >= MaxGuessCount)
         {
             Status = GameStatus.Lost;
         }
