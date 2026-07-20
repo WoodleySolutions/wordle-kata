@@ -17,6 +17,11 @@ public class Wordle
             if (guess[i] == answer[i])
             {
                 result[i] = green;
+                if (usedChars.Contains(guess[i]))
+                {
+                    var index = Array.IndexOf(guess.ToCharArray(), guess[i]);
+                    result[index] = gray;
+                }
             }
             else if (answer.Contains(guess[i]) && !usedChars.Contains(guess[i]))
             {
