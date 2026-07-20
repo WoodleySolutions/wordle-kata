@@ -73,6 +73,10 @@ public class Wordle(string answer)
         {
             throw new InvalidOperationException("Maximum number of guesses reached");
         }
+        else if (Status == GameStatus.Won)
+        {
+            throw new InvalidOperationException("Game already won");
+        }
     }
 
     private void UpdateGameStatus(string score)
