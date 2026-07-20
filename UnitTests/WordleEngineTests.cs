@@ -9,6 +9,7 @@ public class WordleEngineTests
     [Theory]
     [InlineData("PLANE", "CHART", "--G--")]
     [InlineData("PLANE", "PLANE", "GGGGG")]
+    [InlineData("PLANE", "DITCH", "-----")]
     public void WordleGuess_ReturnsExpectedResult(string answer, string guess, string expected)
     {
         Assert.Equal(expected, _wordle.Guess(answer, guess));
