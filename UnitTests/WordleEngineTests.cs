@@ -113,19 +113,53 @@ public class WordleEngineTests
         game.Guess(guesses[3]);
         game.Guess(guesses[4]);
         game.Guess(guesses[5]);
-        ;
+        
         var exception = Assert.Throws<InvalidOperationException>(() => game.Guess(guesses[6]));
         Assert.Equal("Maximum number of guesses reached", exception.Message);
     }
 
     [Fact]
-    public void CorrectGuessWinsTheGame()
+    public void WordleCorrectGuessWinsTheGame()
     {
-        var game = new Wordle("PLANE");
+        var answer = "PLANE";
+        var game = new Wordle(answer);
 
-        var feedback = game.Guess("PLANE");
+        //check initial state of the game
+        Assert.Equal(string.Empty, game.Solution);
+        Assert.Equal(GameStatus.InProgress, game.Status);
 
+        var feedback = game.Guess(answer);
+
+        //check the state of the game after a correct guess
         Assert.Equal("GGGGG", feedback);
         Assert.Equal(GameStatus.Won, game.Status);
+        Assert.Equal(answer, game.Solution);
+    }
+
+
+    [Fact]
+    public void WordleSixIncorrectGuessesLosesTheGameAndRevealsAnswer()
+    {
+        var answer = "PLANE";
+        var guesses = new List<string> { "DITCH", "CHART", "ELATE", "WORLD", "LEVER", "BEVEL", };
+
+        var game = new Wordle(answer);
+
+        game.Guess(guesses[0]);
+        game.Guess(guesses[1]);
+        game.Guess(guesses[2]);
+        game.Guess(guesses[3]);
+        game.Guess(guesses[4]);
+
+        //Check the state of the game after five incorrect guesses
+        Assert.Equal(string.Empty, game.Solution);
+        Assert.Equal(GameStatus.InProgress, game.Status);
+
+        game.Guess(guesses[5]);
+
+        //Ceck the state of the game after the sixth incorrect guess
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Equal(answer, game.Solution);
+
     }
 }
