@@ -40,4 +40,14 @@ public class WordleEngineTests
 
         Assert.Equal(guesses, _wordle.GuessHistory);
     }
+
+    
+    [Theory] //Answer, Guess, Expected ArgumentExceptionMessage
+    [InlineData("PLANE", "PLANET", "Invalid Input, Too Long")]
+    [InlineData("PLANE", "PLAN", "Invalid Input, Too Short")]
+    public void WordleShouldValidateGuessInput(string answer, string guess, string expectedMessage)
+    {
+        var exception = Assert.Throws<ArgumentException>(() => _wordle.Guess(answer, guess));
+        Assert.Equal(expectedMessage, exception.Message);
+    }
 }

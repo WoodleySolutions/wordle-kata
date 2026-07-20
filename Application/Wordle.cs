@@ -11,6 +11,8 @@ public class Wordle
 
     public string Guess(string answer, string guess)
     {
+        ValidateInput(answer, guess);
+
         char[] result = [gray, gray, gray, gray, gray];
         Dictionary<char, int> unmatched = [];
 
@@ -44,5 +46,13 @@ public class Wordle
         guessHistory.Add((answer, guess, resultString));
 
         return resultString;
+    }
+
+    private static void ValidateInput(string answer, string guess)
+    {
+        if (guess.Length != answer.Length)
+        {
+            throw new ArgumentException(guess.Length > answer.Length ? "Invalid Input, Too Long" : "Invalid Input, Too Short");
+        }
     }
 }
