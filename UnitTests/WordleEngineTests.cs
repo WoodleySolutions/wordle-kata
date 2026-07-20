@@ -141,7 +141,7 @@ public class WordleEngineTests
     public void WordleSixIncorrectGuessesLosesTheGameAndRevealsAnswer()
     {
         var answer = "PLANE";
-        var guesses = new List<string> { "DITCH", "CHART", "ELATE", "WORLD", "LEVER", "BEVEL", };
+        var guesses = new List<string> { "DITCH", "CHART", "ELATE", "WORLD", "LEVER", "BEVEL" };
 
         var game = new Wordle(answer);
 

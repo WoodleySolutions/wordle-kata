@@ -13,8 +13,8 @@ public class Wordle(string answer)
 
     public IReadOnlyList<(string guess, string feedback)> GuessHistory => guessHistory;
 
-    public GameStatus Status { get; set; } = GameStatus.InProgress;
-    public string Solution { get; set; } = string.Empty;
+    public GameStatus Status { get; private set; } = GameStatus.InProgress;
+    public string? Solution => Status == GameStatus.InProgress ? null : answer;
 
 
     public string Guess(string guess)
@@ -80,12 +80,10 @@ public class Wordle(string answer)
         if (score == new string(green, answer.Length))
         {
             Status = GameStatus.Won;
-            Solution = answer;
         }
         else if (guessHistory.Count >= MAXGUESSCOUNT)
         {
             Status = GameStatus.Lost;
-            Solution = answer;
         }
     }
 }
