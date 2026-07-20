@@ -6,7 +6,7 @@ public class Wordle
     private readonly char yellow = 'Y';
     private readonly char gray = '-';
 
-    private List<(string answer, string guess, string expected)> guessHistory = new();
+    private List<(string answer, string guess, string feedback)> guessHistory = new();
     public IReadOnlyList<(string answer, string guess, string feedback)> GuessHistory => guessHistory;
 
     public string Guess(string answer, string guess)
@@ -53,6 +53,10 @@ public class Wordle
         if (guess.Length != answer.Length)
         {
             throw new ArgumentException(guess.Length > answer.Length ? "Invalid Input, Too Long" : "Invalid Input, Too Short");
+        }
+        else if (!guess.All(char.IsLetter))
+        {
+            throw new ArgumentException("Invalid Input, Non-letter characters not alloed");
         }
     }
 }
