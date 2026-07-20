@@ -14,6 +14,9 @@ public class WordleEngineTests
     [InlineData("PLANE", "LEVER", "YY---")]
     [InlineData("PLANE", "ELATE", "-GG-G")]
     [InlineData("HELLO", "LLAMA", "YY---")]
+    [InlineData("GEESE", "EMCEE", "Y--YG")]
+    [InlineData("LEVEE", "EAGLE", "Y--YG")]
+    [InlineData("ELATE", "EEEEE", "G---G")]
     public void WordleGuess_ReturnsExpectedResult(string answer, string guess, string expected)
     {
         Assert.Equal(expected, _wordle.Guess(answer, guess));
