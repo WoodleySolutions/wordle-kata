@@ -41,7 +41,7 @@ public class WordleEngineTests
         Assert.Equal(guesses, _wordle.GuessHistory);
     }
 
-    
+
     [Theory] //Answer, Guess, Expected ArgumentExceptionMessage
     [InlineData("PLANE", "PLANET", "Invalid Input, Too Long")]
     [InlineData("PLANE", "PLAN", "Invalid Input, Too Short")]
@@ -49,5 +49,32 @@ public class WordleEngineTests
     {
         var exception = Assert.Throws<ArgumentException>(() => _wordle.Guess(answer, guess));
         Assert.Equal(expectedMessage, exception.Message);
+    }
+
+    [Fact]
+    public void WordleInvalidInputShouldNotCountAsGuess()
+    {
+        var guesses = new List<(string answer, string guess, string expected)>
+        {
+            ("PLANE", "DITCH", "-----"),
+            ("PLANE", "CHART", "--G--"),
+            ("PLANE", "PLANET", "Invalid Input, Too Long"), // Invalid input
+            ("PLANE", "ELATE", "-GG-G"),
+            ("PLANE", "PLAN", "Invalid Input, Too Short"), // Invalid input
+            ("PLANE", "PLANE", "GGGGG")
+        };
+        foreach (var (answer, guess, expected) in guesses)
+        {
+            if (expected.StartsWith("Invalid Input"))
+            {
+                Assert.Throws<ArgumentException>(() => _wordle.Guess(answer, guess));
+            }
+            else
+            {
+                _wordle.Guess(answer, guess);
+            }
+        }
+        var expectedValidGuesses = guesses.Where(g => !g.expected.StartsWith("Invalid Input")).ToList();
+        Assert.Equal(expectedValidGuesses, _wordle.GuessHistory);
     }
 }
