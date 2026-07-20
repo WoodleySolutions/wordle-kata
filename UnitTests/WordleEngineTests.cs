@@ -79,4 +79,32 @@ public class WordleEngineTests
         var expectedValidGuesses = guesses.Where(g => !g.expected.StartsWith("Invalid Input")).ToList();
         Assert.Equal(expectedValidGuesses, _wordle.GuessHistory);
     }
+
+    [Fact]
+    public void WordleHsSixAttemptsToGuessTheAnswer()
+    {
+        var answer = "PLANE";
+        var guesses = new List<string> { "DITCH", "CHART", "ELATE", "WORLD", "LEVER", "PLANE" };
+        foreach (var guess in guesses)
+        {
+            _wordle.Guess(answer, guess);
+        }
+        Assert.Equal(guesses.Count, _wordle.GuessHistory.Count);
+    }
+
+    [Fact]
+    public void WordleThrowsAnErrorAfterSixGuesses()
+    {
+        var answer = "PLANE";
+        var guesses = new List<string> { "DITCH", "CHART", "ELATE", "WORLD", "LEVER", "BEVEL", "PLANE" };
+        _wordle.Guess(answer, guesses[0]);
+        _wordle.Guess(answer, guesses[1]);
+        _wordle.Guess(answer, guesses[2]);
+        _wordle.Guess(answer, guesses[3]);
+        _wordle.Guess(answer, guesses[4]);
+        _wordle.Guess(answer, guesses[5]);
+        ;
+        var exception = Assert.Throws<InvalidOperationException>(() => _wordle.Guess(answer, guesses[6]));
+        Assert.Equal("Maximum number of guesses reached", exception.Message);
+    }
 }

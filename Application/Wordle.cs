@@ -6,6 +6,8 @@ public class Wordle
     private readonly char yellow = 'Y';
     private readonly char gray = '-';
 
+    private const int MAXGUESSCOUNT = 6;
+
     private List<(string answer, string guess, string feedback)> guessHistory = new();
     public IReadOnlyList<(string answer, string guess, string feedback)> GuessHistory => guessHistory;
 
@@ -48,7 +50,7 @@ public class Wordle
         return resultString;
     }
 
-    private static void ValidateInput(string answer, string guess)
+    private void ValidateInput(string answer, string guess)
     {
         if (guess.Length != answer.Length)
         {
@@ -57,6 +59,10 @@ public class Wordle
         else if (!guess.All(char.IsLetter))
         {
             throw new ArgumentException("Invalid Input, Non-letter characters not alloed");
+        }
+        else if (guessHistory.Count() >= MAXGUESSCOUNT)
+        {
+            throw new InvalidOperationException("Maximum number of guesses reached");
         }
     }
 }
