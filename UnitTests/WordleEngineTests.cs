@@ -6,9 +6,11 @@ public class WordleEngineTests
 {
     private readonly Wordle _wordle = new Wordle();
 
-    [Fact]
-    public void WordleCanMarkCorrectLettersGreen()
+    [Theory]
+    [InlineData("PLANE", "CHART", "--G--")]
+    [InlineData("PLANE", "PLANE", "GGGGG")]
+    public void WordleGuess_ReturnsExpectedResult(string answer, string guess, string expected)
     {
-        Assert.Equal("--G--", _wordle.Guess("PLANE", "CHART"));
+        Assert.Equal(expected, _wordle.Guess(answer, guess));
     }
 }
