@@ -2,8 +2,24 @@ namespace UnitTests;
 
 using Application;
 
+/// <summary>
+/// Unit tests for the <see cref="Wordle"/> game engine, organized in rough order of
+/// feature depth: scoring, history tracking, input validation, game lifecycle
+/// (win/loss), hard mode, and random game generation.
+/// </summary>
+/// <remarks>
+/// Scoring tests deliberately lean on duplicate-letter words (GEESE, LEVEE, ELATE)
+/// because duplicate handling is where naive Wordle implementations most often go
+/// wrong. Feedback strings use 'G' = green, 'Y' = yellow, '-' = gray.
+/// </remarks>
 public class WordleEngineTests
 {
+    /// <summary>
+    /// Verifies the two-pass scoring algorithm across representative cases:
+    /// no matches, all matches, and — most importantly — duplicate letters,
+    /// where yellows must never exceed the count of unclaimed answer letters.
+    /// e.g. "EEEEE" vs ELATE yields exactly two hits ("G---G"), not five.
+    /// </summary>
     [Theory] //Answer, Guess, Expected
     [InlineData("PLANE", "CHART", "--G--")]
     [InlineData("PLANE", "PLANE", "GGGGG")]
@@ -20,6 +36,10 @@ public class WordleEngineTests
         Assert.Equal(expected, new Wordle(answer).Guess(guess));
     }
 
+    /// <summary>
+    /// GuessHistory must record every accepted guess with its feedback,
+    /// in the order the guesses were made.
+    /// </summary>
     [Fact]
     public void WordleCanTrackPreviousGuesses()
     {
@@ -41,7 +61,11 @@ public class WordleEngineTests
         Assert.Equal(guesses, game.GuessHistory);
     }
 
-
+    /// <summary>
+    /// Malformed guesses must be rejected with specific, player-facing messages.
+    /// Length problems distinguish too-long from too-short; any non-letter
+    /// character (digits, punctuation) is rejected uniformly.
+    /// </summary>
     [Theory] //Answer, Guess, Expected ArgumentExceptionMessage
     [InlineData("PLANET", "Invalid Input, Too Long")]
     [InlineData("PLAN", "Invalid Input, Too Short")]
@@ -53,6 +77,10 @@ public class WordleEngineTests
         Assert.Equal(expectedMessage, exception.Message);
     }
 
+    /// <summary>
+    /// A rejected guess must not appear in history or burn one of the player's
+    /// six attempts — validation happens before the guess is recorded.
+    /// </summary>
     [Fact]
     public void WordleInvalidInputShouldNotCountAsGuess()
     {
@@ -80,10 +108,15 @@ public class WordleEngineTests
             }
         }
 
+        // Only the valid guesses should have been recorded.
         var expectedValidGuesses = guesses.Where(g => !g.expected.StartsWith("Invalid Input")).ToList();
         Assert.Equal(expectedValidGuesses, game.GuessHistory);
     }
 
+    /// <summary>
+    /// The engine must accept a full run of six guesses — including a winning
+    /// guess on the final attempt — without rejecting the sixth.
+    /// </summary>
     [Fact]
     public void WordleHsSixAttemptsToGuessTheAnswer()
     {
@@ -99,6 +132,10 @@ public class WordleEngineTests
         Assert.Equal(guesses.Count, game.GuessHistory.Count);
     }
 
+    /// <summary>
+    /// A seventh guess after six misses must be refused with an
+    /// InvalidOperationException — the game is over, not merely invalid input.
+    /// </summary>
     [Fact]
     public void WordleThrowsAnErrorAfterSixGuesses()
     {
@@ -118,6 +155,10 @@ public class WordleEngineTests
         Assert.Equal("Maximum number of guesses reached", exception.Message);
     }
 
+    /// <summary>
+    /// End-to-end win path: Solution stays hidden (null) while in progress,
+    /// then a correct guess flips Status to Won and reveals the answer.
+    /// </summary>
     [Fact]
     public void WordleCorrectGuessWinsTheGame()
     {
@@ -136,7 +177,10 @@ public class WordleEngineTests
         Assert.Equal(answer, game.Solution);
     }
 
-
+    /// <summary>
+    /// End-to-end loss path: the answer remains hidden through guess five,
+    /// and only the sixth miss transitions the game to Lost and reveals it.
+    /// </summary>
     [Fact]
     public void WordleSixIncorrectGuessesLosesTheGameAndRevealsAnswer()
     {
@@ -163,6 +207,10 @@ public class WordleEngineTests
 
     }
 
+    /// <summary>
+    /// A won game is closed: further guesses throw "Game already won" rather
+    /// than being scored. Distinct message from the loss case by design.
+    /// </summary>
     [Fact]
     public void WordleWinningEndsTheGame()
     {
@@ -180,6 +228,10 @@ public class WordleEngineTests
         Assert.Equal("Game already won", exception.Message);
     }
 
+    /// <summary>
+    /// Hard mode: a letter revealed as yellow must appear in every later guess.
+    /// The error message names the offending letter to guide the player.
+    /// </summary>
     [Fact]
     public void HardModeRequiresYellowLettersInSubsequentGuesses()
     {
@@ -190,6 +242,11 @@ public class WordleEngineTests
         Assert.Equal("Hard mode: guess must contain L", ex.Message);
     }
 
+    /// <summary>
+    /// Hard mode: a letter confirmed green is locked to its position. Merely
+    /// including the letter elsewhere is not enough — this matches the official
+    /// NYT interpretation of hard mode.
+    /// </summary>
     [Fact]
     public void HardModeRequiresGreenLettersToStayInPosition()
     {
@@ -202,6 +259,10 @@ public class WordleEngineTests
         Assert.Equal("Hard mode: L must be in position 2", ex.Message);
     }
 
+    /// <summary>
+    /// Positive case for hard mode: a guess honoring all accumulated clues
+    /// (green position and yellow letters) is accepted and scored normally.
+    /// </summary>
     [Fact]
     public void HardModeCompliantGuessIsAccepted()
     {
@@ -212,6 +273,11 @@ public class WordleEngineTests
         Assert.Equal("YG-YY", game.Guess("ALIEN"));           // honors L@2, E, N
     }
 
+    /// <summary>
+    /// A hard-mode violation is treated like any other invalid input: it is
+    /// rejected before being recorded, so it costs no attempt and leaves the
+    /// game in progress.
+    /// </summary>
     [Fact]
     public void HardModeViolationsDoNotConsumeAttempts()
     {
@@ -224,6 +290,10 @@ public class WordleEngineTests
         Assert.Equal(GameStatus.InProgress, game.Status);
     }
 
+    /// <summary>
+    /// Control test: with hard mode off (the default), players may freely
+    /// discard earlier clues — the same guess that hard mode rejects is legal.
+    /// </summary>
     [Fact]
     public void NormalModeDoesNotEnforceClueReuse()
     {
@@ -233,6 +303,12 @@ public class WordleEngineTests
         Assert.Equal("--G--", game.Guess("CHART"));           // abandoning clues is legal here
     }
 
+    /// <summary>
+    /// GenerateRandomWordle must draw its answer from the public WordList.
+    /// The game is deliberately lost (six throwaway guesses) because Solution
+    /// is only revealed after the game ends. Note "XXXXX" also demonstrates
+    /// that guesses need not come from the word list.
+    /// </summary>
     [Fact]
     public void RandomWordleSelectsSolutionFromWordList()
     {
@@ -247,6 +323,11 @@ public class WordleEngineTests
         Assert.Contains(game.Solution, Wordle.WordList);
     }
 
+    /// <summary>
+    /// The injectable Random parameter makes answer selection deterministic:
+    /// two games seeded identically must select the same solution. This is the
+    /// hook that keeps randomness testable without exposing the answer directly.
+    /// </summary>
     [Fact]
     public void SameSeedProducesSameSolution()
     {
@@ -258,6 +339,11 @@ public class WordleEngineTests
         Assert.Equal(game1.Solution, game2.Solution);
     }
 
+    /// <summary>
+    /// Validation ordering: basic input checks (length, characters) run before
+    /// hard-mode checks, so a malformed guess reports the input error even when
+    /// it also violates hard-mode constraints.
+    /// </summary>
     [Fact]
     public void HardModeStillValidatesInputLengthFirst()
     {
