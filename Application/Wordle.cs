@@ -64,8 +64,6 @@ public class Wordle(string answer, bool hardMode = false)
 
     private void ValidateInput(string guess)
     {
-        EnsureHardModeCompliance(guess);
-
         if (guess.Length != answer.Length)
         {
             throw new ArgumentException(guess.Length > answer.Length ? "Invalid Input, Too Long" : "Invalid Input, Too Short");
@@ -82,6 +80,8 @@ public class Wordle(string answer, bool hardMode = false)
         {
             throw new InvalidOperationException("Game already won");
         }
+
+        EnsureHardModeCompliance(guess);
     }
 
     private void EnsureHardModeCompliance(string guess)

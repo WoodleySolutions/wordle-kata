@@ -257,4 +257,14 @@ public class WordleEngineTests
 
         Assert.Equal(game1.Solution, game2.Solution);
     }
+
+    [Fact]
+    public void HardModeStillValidatesInputLengthFirst()
+    {
+        var game = new Wordle("PLANE", hardMode: true);
+        game.Guess("ELATE");                                   // green at position 5
+
+        var ex = Assert.Throws<ArgumentException>(() => game.Guess("PLAN"));
+        Assert.Equal("Invalid Input, Too Short", ex.Message);
+    }
 }
