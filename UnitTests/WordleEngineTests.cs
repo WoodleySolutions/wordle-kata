@@ -45,8 +45,8 @@ public class WordleEngineTests
     [Theory] //Answer, Guess, Expected ArgumentExceptionMessage
     [InlineData("PLANET", "Invalid Input, Too Long")]
     [InlineData("PLAN", "Invalid Input, Too Short")]
-    [InlineData("PLAN3", "Invalid Input, Non-letter characters not alloed")]
-    [InlineData("PLA-E", "Invalid Input, Non-letter characters not alloed")]
+    [InlineData("PLAN3", "Invalid Input, Non-letter characters not allowed")]
+    [InlineData("PLA-E", "Invalid Input, Non-letter characters not allowed")]
     public void WordleShouldValidateGuessInput(string guess, string expectedMessage)
     {
         var exception = Assert.Throws<ArgumentException>(() => new Wordle("PLANE").Guess(guess));

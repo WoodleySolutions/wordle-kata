@@ -70,7 +70,7 @@ public class Wordle(string answer, bool hardMode = false)
         }
         else if (!guess.All(char.IsLetter))
         {
-            throw new ArgumentException("Invalid Input, Non-letter characters not alloed");
+            throw new ArgumentException("Invalid Input, Non-letter characters not allowed");
         }
         else if (Status == GameStatus.Lost)
         {
