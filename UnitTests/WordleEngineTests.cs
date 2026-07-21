@@ -179,4 +179,82 @@ public class WordleEngineTests
         var exception = Assert.Throws<InvalidOperationException>(() => game.Guess("WINNR"));
         Assert.Equal("Game already won", exception.Message);
     }
+
+    [Fact]
+    public void HardModeRequiresYellowLettersInSubsequentGuesses()
+    {
+        var game = new Wordle("PLANE", hardMode: true);
+        game.Guess("LEVER");                                  // YY--- : L and E are clues now
+
+        var ex = Assert.Throws<ArgumentException>(() => game.Guess("CHART"));
+        Assert.Equal("Hard mode: guess must contain L", ex.Message);
+    }
+
+    [Fact]
+    public void HardModeRequiresGreenLettersToStayInPosition()
+    {
+        var game = new Wordle("PLANE", hardMode: true);
+        game.Guess("LEVER");                                  // YY---
+        game.Guess("OLDEN");                                  // -G-YY : L locked at position 2
+
+        // LANES contains L, E, N — but L abandoned its position. Official-rules reading.
+        var ex = Assert.Throws<ArgumentException>(() => game.Guess("LANES"));
+        Assert.Equal("Hard mode: L must be in position 2", ex.Message);
+    }
+
+    [Fact]
+    public void HardModeCompliantGuessIsAccepted()
+    {
+        var game = new Wordle("PLANE", hardMode: true);
+        game.Guess("LEVER");
+        game.Guess("OLDEN");
+
+        Assert.Equal("YG-YY", game.Guess("ALIEN"));           // honors L@2, E, N
+    }
+
+    [Fact]
+    public void HardModeViolationsDoNotConsumeAttempts()
+    {
+        var game = new Wordle("PLANE", hardMode: true);
+        game.Guess("LEVER");
+
+        Assert.Throws<ArgumentException>(() => game.Guess("CHART"));
+
+        Assert.Single(game.GuessHistory);
+        Assert.Equal(GameStatus.InProgress, game.Status);
+    }
+
+    [Fact]
+    public void NormalModeDoesNotEnforceClueReuse()
+    {
+        var game = new Wordle("PLANE");
+        game.Guess("LEVER");
+
+        Assert.Equal("--G--", game.Guess("CHART"));           // abandoning clues is legal here
+    }
+
+    [Fact]
+    public void RandomWordleSelectsSolutionFromWordList()
+    {
+        var game = Wordle.GenerateRandomWordle();
+
+        for (int i = 0; i < 6; i++)
+        {
+            try { game.Guess("XXXXX"); } catch (InvalidOperationException) { break; }
+        }
+
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Contains(game.Solution, Wordle.WordList);
+    }
+
+    [Fact]
+    public void SameSeedProducesSameSolution()
+    {
+        var game1 = Wordle.GenerateRandomWordle(rng: new Random(42));
+        var game2 = Wordle.GenerateRandomWordle(rng: new Random(42));
+
+        for (int i = 0; i < 6; i++) { game1.Guess("XXXXX"); game2.Guess("XXXXX"); }
+
+        Assert.Equal(game1.Solution, game2.Solution);
+    }
 }

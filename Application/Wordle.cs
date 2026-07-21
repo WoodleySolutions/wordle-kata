@@ -1,7 +1,10 @@
 namespace Application;
 
-public class Wordle(string answer)
+public class Wordle(string answer, bool hardMode = false)
 {
+    public static readonly IReadOnlyList<string> WordList =
+    ["PLANE", "CHART", "ALIEN", "GEESE", "LEVEE", "ELATE", "BEVEL", "DITCH", "WORLD", "OLDEN"];
+
     private readonly char green = 'G';
     private readonly char yellow = 'Y';
     private readonly char gray = '-';
@@ -61,6 +64,8 @@ public class Wordle(string answer)
 
     private void ValidateInput(string guess)
     {
+        EnsureHardModeCompliance(guess);
+
         if (guess.Length != answer.Length)
         {
             throw new ArgumentException(guess.Length > answer.Length ? "Invalid Input, Too Long" : "Invalid Input, Too Short");
@@ -79,6 +84,26 @@ public class Wordle(string answer)
         }
     }
 
+    private void EnsureHardModeCompliance(string guess)
+    {
+        if (!hardMode) return;
+
+        foreach (var (previousGuess, feedback) in guessHistory)
+        {
+            for (int i = 0; i < feedback.Length; i++)
+            {
+                if (feedback[i] == green && guess[i] != previousGuess[i])
+                {
+                    throw new ArgumentException($"Hard mode: {previousGuess[i]} must be in position {i + 1}");
+                }
+                if (feedback[i] == yellow && !guess.Contains(previousGuess[i]))
+                {
+                    throw new ArgumentException($"Hard mode: guess must contain {previousGuess[i]}");
+                }
+            }
+        }
+    }
+
     private void UpdateGameStatus(string score)
     {
         if (score == new string(green, answer.Length))
@@ -89,6 +114,12 @@ public class Wordle(string answer)
         {
             Status = GameStatus.Lost;
         }
+    }
+
+    public static Wordle GenerateRandomWordle(bool hardMode = false, Random? rng = null)
+    {
+        rng ??= Random.Shared;
+        return new Wordle(WordList[rng.Next(WordList.Count)], hardMode);
     }
 }
 
